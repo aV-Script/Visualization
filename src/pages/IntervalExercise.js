@@ -1,6 +1,5 @@
 ﻿import React, { useState, useEffect } from "react";
 import {
-  Container,
   Typography,
   Box,
   Button,
@@ -15,6 +14,8 @@ import {
   Paper,
   Divider,
 } from "@mui/material";
+import { MidiNumbers } from "react-piano";
+import PianoKeyboard from "../components/PianoKeyboard"; 
 
 const ALL_KEYS = [
   "C", "C#/Db", "D", "D#/Eb", "E", "F", "F#/Gb", "G", "G#/Ab", "A", "A#/Ab", "B",
@@ -47,6 +48,8 @@ export default function IntervalExercise({ onBack }) {
   const [sequence, setSequence] = useState([]);
   const [userInput, setUserInput] = useState([]);
   const [feedback, setFeedback] = useState(null);
+  const firstNote = MidiNumbers.fromNote("c4");
+  const lastNote = MidiNumbers.fromNote("b5");
 
   useEffect(() => {
     if (settings) {
@@ -84,12 +87,21 @@ export default function IntervalExercise({ onBack }) {
     const isCorrect = expected.every((note, i) => note === userInput[i]);
     setFeedback({
       severity: isCorrect ? "success" : "error",
-      text: isCorrect
-        ? "✅ Corretto!"
-        : `❌ Errato. Soluzione: ${expected.join(", ")}`,
+      text: isCorrect ? "Corretto!" : "Errato",
     });
     if (isCorrect && currentSeries < settings.numSeries) {
       setTimeout(() => setCurrentSeries((prev) => prev + 1), 1000);
+    }
+  }
+
+  function noteNameFromMidi(midiNumber) {
+    return MidiNumbers.getAttributes(midiNumber).note;
+  }
+
+  function onNoteClick(midiNumber) {
+    const note = noteNameFromMidi(midiNumber);
+    if (userInput.length < sequence.length && !userInput.includes(note)) {
+      setUserInput([...userInput, note]);
     }
   }
 
@@ -105,7 +117,7 @@ export default function IntervalExercise({ onBack }) {
     }
 
     return (
-      <Container maxWidth="sm" sx={{ mt: 6 }}>
+       <Box sx={{ maxWidth: 700, mx: "auto", p: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
           <Typography variant="h5" gutterBottom>
             Configurazione Esercizio
@@ -161,14 +173,14 @@ export default function IntervalExercise({ onBack }) {
             </Stack>
           </Box>
         </Paper>
-      </Container>
+      </Box>
     );
   }
 
   if (!settings) return <SettingsForm />;
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 6 }}>
+    <Box sx={{ maxWidth: 700, mx: "auto", p: 4 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
         <Typography variant="h6">
           Esercizio {currentSeries} di {settings.numSeries}
@@ -181,22 +193,17 @@ export default function IntervalExercise({ onBack }) {
           Posizioni intervalli: {sequence.join(" - ")}
         </Typography>
 
-        <Box sx={{ mt: 2 }}>
+        <Box>
           <Typography variant="subtitle1">Seleziona le note:</Typography>
-          <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
-            {ALL_KEYS.map((note) => (
-              <Button
-                key={note}
-                variant={userInput.includes(note) ? "contained" : "outlined"}
-                onClick={() =>
-                  userInput.length < sequence.length &&
-                  setUserInput([...userInput, note])
-                }
-              >
-                {note}
-              </Button>
-            ))}
-          </Stack>
+          <Box>
+            <PianoKeyboard
+              noteRange={{ first: firstNote, last: lastNote }}
+              onNoteClick={onNoteClick}
+              activeNotes={userInput.map((note) =>
+                MidiNumbers.fromNote(note)
+              )}
+            />
+          </Box>
         </Box>
 
         <Box mt={2}>
@@ -219,10 +226,14 @@ export default function IntervalExercise({ onBack }) {
           >
             Controlla risposta
           </Button>
-          <Button variant="outlined" color="warning" onClick={() => {
-            setUserInput([]);
-            setFeedback(null);
-          }}>
+          <Button
+            variant="outlined"
+            color="warning"
+            onClick={() => {
+              setUserInput([]);
+              setFeedback(null);
+            }}
+          >
             Reset
           </Button>
           <Button
@@ -243,6 +254,6 @@ export default function IntervalExercise({ onBack }) {
           </Alert>
         )}
       </Paper>
-    </Container>
+    </Box>
   );
 }
