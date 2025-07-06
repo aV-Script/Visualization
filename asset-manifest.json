@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/aV-Script/Visualization/static/css/main.e6c13ad2.css",
+    "main.js": "/aV-Script/Visualization/static/js/main.81860bae.js",
+    "static/js/453.b2388f59.chunk.js": "/aV-Script/Visualization/static/js/453.b2388f59.chunk.js",
+    "index.html": "/aV-Script/Visualization/index.html",
+    "main.e6c13ad2.css.map": "/aV-Script/Visualization/static/css/main.e6c13ad2.css.map",
+    "main.81860bae.js.map": "/aV-Script/Visualization/static/js/main.81860bae.js.map",
+    "453.b2388f59.chunk.js.map": "/aV-Script/Visualization/static/js/453.b2388f59.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.81860bae.js"
+  ]
+}
