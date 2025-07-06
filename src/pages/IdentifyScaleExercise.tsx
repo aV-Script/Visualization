@@ -69,6 +69,7 @@ export default class MajorScaleExercise extends React.Component<
   onNoteClick = (midiNumber: number) => {
     const note = this.noteNameFromMidi(midiNumber);
     const { userInput } = this.state;
+    const scale = this.generateScale();
 
     if (userInput.length < scale.length && !userInput.includes(note)) {
       this.setState(
@@ -134,7 +135,6 @@ export default class MajorScaleExercise extends React.Component<
 
   render() {
     const { rootNote, userInput, feedback, correctCount, wrongCount } = this.state;
-    const scale = this.generateScale();
 
     return (
       <Box sx={{ mx: "auto", p: 4 }}>
@@ -188,6 +188,7 @@ export default class MajorScaleExercise extends React.Component<
               <Chip label={`Sbagliate: ${wrongCount}`} color="error" />
             </Box>
           </Stack>
+
           {feedback && (
             <Alert severity={feedback.severity} sx={{ mt: 3 }}>
               {feedback.text}
