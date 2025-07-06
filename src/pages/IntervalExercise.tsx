@@ -23,6 +23,9 @@ const getFeedbackText = (correct: boolean, interval: Interval, expectedNote: num
   return `Sbagliato`;
 };
 
+const firstNote = MidiNumbers.fromNote("c4");
+const lastNote = MidiNumbers.fromNote("c7"); 
+
 export default function IntervalExercise({ onBack }: IntervalExerciseProps) {
   const [rootNote, setRootNote] = useState<number | null>(null);
   const [interval, setInterval] = useState<Interval | null>(null);
@@ -32,19 +35,14 @@ export default function IntervalExercise({ onBack }: IntervalExerciseProps) {
   const [correctCount, setCorrectCount] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
 
-    const maxIntervalSemitones = Math.max(...INTERVALS.map(i => i.semitones));
-
-    const firstNote = MidiNumbers.fromNote("c4");
-    const lastNote = MidiNumbers.fromNote("c7"); 
-
-    const generateExercise = useCallback(() => {
+  const generateExercise = useCallback(() => {
     const randomInterval = INTERVALS[Math.floor(Math.random() * INTERVALS.length)];
     const root = getRandomNoteInRange(firstNote, lastNote - randomInterval.semitones);
     setRootNote(root);
     setInterval(randomInterval);
     setSelectedNote(null);
     setFeedback(null);
-    }, []);
+  }, []);
 
   useEffect(() => {
     generateExercise();
