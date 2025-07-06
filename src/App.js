@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import Home from "./pages/Home";
 import IntervalExercise from "./pages/IntervalExercise";
 import IdentifyScaleExercise from "./pages/IdentifyScaleExercise";
