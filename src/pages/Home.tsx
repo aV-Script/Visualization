@@ -1,29 +1,12 @@
 import React from "react";
-import {
-  Container,
-  Box,
-  Typography,
-  Button,
-  Paper,
-  Stack,
-} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { Container, Box, Typography, Button, Paper, Stack } from "@mui/material";
 
-type HomeProps = {
-  onStartInterval: () => void;
-  onStartIdentify: () => void;
-};
+export default function Home() {
+  const navigate = useNavigate();
 
-export default function Home({ onStartInterval, onStartIdentify }: HomeProps) {
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
+    <Container sx={{ mx: "auto", p: 4 }}>
         <Paper elevation={3} sx={{ padding: 4, width: "100%" }}>
           <Stack spacing={4} alignItems="center">
             <Typography variant="h4" component="h1" align="center">
@@ -35,7 +18,7 @@ export default function Home({ onStartInterval, onStartIdentify }: HomeProps) {
               color="primary"
               size="large"
               fullWidth
-              onClick={onStartInterval}
+              onClick={() => navigate("/exercise")}
             >
               Riconoscimento Intervalli
             </Button>
@@ -45,13 +28,12 @@ export default function Home({ onStartInterval, onStartIdentify }: HomeProps) {
               color="primary"
               size="large"
               fullWidth
-              onClick={onStartIdentify}
+              onClick={() => navigate("/identify")}
             >
               Riconoscimento Scale
             </Button>
           </Stack>
         </Paper>
-      </Box>
     </Container>
   );
 }

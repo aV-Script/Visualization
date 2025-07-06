@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -7,26 +8,28 @@ import {
   Stack,
   Chip,
   Alert,
+  Container
 } from "@mui/material";
 import { MidiNumbers } from "react-piano";
 import PianoKeyboard from "../components/PianoKeyboard";
 import { INTERVALS } from "../constants/music";
-import { IntervalExerciseProps, Interval, Feedback } from "../types/music";
+import { Interval, Feedback } from "../types/music";
 
 const getRandomNoteInRange = (min: number, max: number): number =>
   Math.floor(Math.random() * (max - min + 1)) + min;
 
 const filterNonNull = <T,>(arr: (T | null)[]): T[] => arr.filter((x): x is T => x !== null);
 
-const getFeedbackText = (correct: boolean, interval: Interval, expectedNote: number) => {
+const getFeedbackText = (correct: boolean, interval: Interval) => {
   if (correct) return `Corretto`;
   return `Sbagliato`;
 };
 
 const firstNote = MidiNumbers.fromNote("c4");
-const lastNote = MidiNumbers.fromNote("c7"); 
+const lastNote = MidiNumbers.fromNote("c7");
 
-export default function IntervalExercise({ onBack }: IntervalExerciseProps) {
+export default function IntervalExercise() {
+  const navigate = useNavigate();
   const [rootNote, setRootNote] = useState<number | null>(null);
   const [interval, setInterval] = useState<Interval | null>(null);
   const [selectedNote, setSelectedNote] = useState<number | null>(null);
@@ -50,7 +53,7 @@ export default function IntervalExercise({ onBack }: IntervalExerciseProps) {
 
   const handleNoteClick = useCallback(
     (midiNumber: number) => {
-      if (midiNumber === rootNote) return; 
+      if (midiNumber === rootNote) return;
       setSelectedNote(midiNumber);
 
       if (rootNote === null || interval === null) return;
@@ -60,24 +63,23 @@ export default function IntervalExercise({ onBack }: IntervalExerciseProps) {
 
       setFeedback({
         severity: correct ? "success" : "error",
-        text: getFeedbackText(correct, interval, expectedNote),
+        text: getFeedbackText(correct, interval),
       });
 
       if (correct) {
         setCorrectCount((c) => c + 1);
         setTimeout(() => {
           generateExercise();
-        }, 1000); // Aspetta 1 secondo per mostrare il feedback prima di passare al prossimo esercizio
+        }, 1000);
       } else {
         setWrongCount((w) => w + 1);
-        // Resta sullo stesso esercizio finché non indovina
       }
     },
     [rootNote, interval, generateExercise]
   );
 
   return (
-    <Box sx={{mx: "auto", p: 4 }}>
+    <Container sx={{ mx: "auto", p: 4 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
         <Typography variant="h5" gutterBottom>
           Trova l'intervallo: <strong>{interval?.name}</strong>
@@ -110,7 +112,7 @@ export default function IntervalExercise({ onBack }: IntervalExerciseProps) {
         </Box>
 
         <Stack direction="row" spacing={2} mt={3} flexWrap="wrap" alignItems="center">
-          <Button variant="outlined" color="secondary" onClick={onBack}>
+          <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
             Torna indietro
           </Button>
           <Box sx={{ ml: "auto", display: "flex", gap: 2 }}>
@@ -125,6 +127,6 @@ export default function IntervalExercise({ onBack }: IntervalExerciseProps) {
           </Alert>
         )}
       </Paper>
-    </Box>
+    </Container>
   );
 }
