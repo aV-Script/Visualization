@@ -2,26 +2,25 @@ import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
   palette: {
-    mode: "dark", // Attiva modalità scura
-
+    mode: "dark",
     primary: {
-      main: "#2859b3",       // Blue (intenso)
+      main: "#2859b3",       
       contrastText: "#fefdf3",
     },
     secondary: {
-      main: "#ffb722",       // Gold
+      main: "#ffb722",      
       contrastText: "#0a1636",
     },
     background: {
-      default: "#0a1636",    // Midnight Blue (sfondo principale)
-      paper: "#102b6d",      // Navy Blue (per card, moduli, ecc.)
+      default: "#0a1636",    
+      paper: "#102b6d",      
     },
     text: {
-      primary: "#fefdf3",    // Off white
-      secondary: "#ffd76a",  // Gold light
+      primary: "#fefdf3",    
+      secondary: "#ffd76a",  
     },
     warning: {
-      main: "#ffd76a",       // Usabile per accenti o attenzione
+      main: "#ffd76a",       
     },
   },
   typography: {
@@ -34,7 +33,7 @@ const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: "9999px", // pill shape
+          borderRadius: "9999px", 
           textTransform: "none",
         },
       },
@@ -42,7 +41,7 @@ const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundImage: "none", // rimuove gradienti di default
+          backgroundImage: "none", 
         },
       },
     },

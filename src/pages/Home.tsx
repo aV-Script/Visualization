@@ -8,7 +8,12 @@ import {
   Stack,
 } from "@mui/material";
 
-export default function Home({ onStartInterval, onStartIdentify }) {
+type HomeProps = {
+  onStartInterval: () => void;
+  onStartIdentify: () => void;
+};
+
+export default function Home({ onStartInterval, onStartIdentify }: HomeProps) {
   return (
     <Container maxWidth="sm">
       <Box

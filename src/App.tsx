@@ -1,3 +1,4 @@
+// App.tsx
 import React, { useState } from "react";
 import Home from "./pages/Home";
 import IntervalExercise from "./pages/IntervalExercise";
@@ -6,7 +7,7 @@ import { ThemeProvider, CssBaseline } from "@mui/material";
 import theme from "./theme"; 
 
 export default function App() {
-  const [page, setPage] = useState("home");
+  const [page, setPage] = useState<"home" | "exercise" | "identify">("home");
 
   return (
     <ThemeProvider theme={theme}>
@@ -18,8 +19,12 @@ export default function App() {
             onStartIdentify={() => setPage("identify")}
           />
         )}
-        {page === "exercise" && <IntervalExercise onBack={() => setPage("home")} />}
-        {page === "identify" && <IdentifyScaleExercise onBack={() => setPage("home")} />}
+        {page === "exercise" && (
+          <IntervalExercise onBack={() => setPage("home")} />
+        )}
+        {page === "identify" && (
+          <IdentifyScaleExercise onBack={() => setPage("home")} />
+        )}
       </>
     </ThemeProvider>
   );
