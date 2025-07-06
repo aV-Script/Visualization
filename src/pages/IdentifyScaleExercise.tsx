@@ -51,7 +51,7 @@ export default function MajorScaleExercise({ onBack }: MajorScaleExerciseProps) 
     }
   }
 
-    function checkAnswer() {
+       const checkAnswer = React.useCallback(() => {
       const isCorrect = scale.every((note, i) => note === userInput[i]);
       setFeedback({
         severity: isCorrect ? "success" : "error",
@@ -66,7 +66,7 @@ export default function MajorScaleExercise({ onBack }: MajorScaleExerciseProps) 
       } else {
         setWrongCount(w => w + 1);
       }
-    }
+    }, [scale, userInput, rootNote]);
 
 
     useEffect(() => {
@@ -77,7 +77,8 @@ export default function MajorScaleExercise({ onBack }: MajorScaleExerciseProps) 
       ) {
         checkAnswer();
       }
-    }, [userInput, scale, feedback]);
+    }, [userInput, scale, feedback, checkAnswer]);
+
 
   function resetExercise() {
     const randomKey = ALL_KEYS[Math.floor(Math.random() * ALL_KEYS.length)];
