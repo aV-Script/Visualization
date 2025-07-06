@@ -1,5 +1,5 @@
 import React from "react";
-import { Piano, MidiNumbers } from "react-piano";
+import { Piano } from "react-piano";
 import "react-piano/dist/styles.css";
 
 type PianoKeyboardProps = {
