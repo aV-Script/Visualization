@@ -9,10 +9,6 @@ export default function Home() {
     <Container sx={{ mx: "auto", p: 4 }}>
         <Paper elevation={3} sx={{ padding: 4, width: "100%" }}>
           <Stack spacing={4} alignItems="center">
-            <Typography variant="h4" component="h1" align="center">
-              Esercizi di Visualizzazione Musicale
-            </Typography>
-
             <Button
               variant="contained"
               color="primary"

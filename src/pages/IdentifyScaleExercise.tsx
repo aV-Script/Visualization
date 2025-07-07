@@ -8,7 +8,7 @@ import {
   Stack,
   Chip,
   Alert,
-  Container
+  Container,
 } from "@mui/material";
 import { MidiNumbers } from "react-piano";
 import PianoKeyboard from "../components/PianoKeyboard";
@@ -34,7 +34,6 @@ export default function MajorScaleExercise() {
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Pulisce timeout alla dismount
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -57,6 +56,12 @@ export default function MajorScaleExercise() {
     resetExercise();
   }, [resetExercise]);
 
+  const clearInput = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setUserInput([]);
+    setFeedback(null);
+  };
+
   const onNoteClick = (midiNumber: number) => {
     const note = MidiNumbers.getAttributes(midiNumber).note;
     const scale = generateScale();
@@ -65,7 +70,6 @@ export default function MajorScaleExercise() {
       const newInput = [...userInput, note];
       setUserInput(newInput);
 
-      // Se l’input è completo, verifica la risposta
       if (newInput.length === scale.length) {
         const isCorrect = scale.every((n, i) => n === newInput[i]);
         setFeedback({
@@ -74,6 +78,7 @@ export default function MajorScaleExercise() {
             ? `Bravo! Scala maggiore di ${rootNote} corretta.`
             : `Errore. Scala corretta: ${scale.join(", ")}`,
         });
+
         if (isCorrect) {
           setCorrectCount((c) => c + 1);
           timeoutRef.current = setTimeout(() => resetExercise(), 1500);
@@ -85,16 +90,19 @@ export default function MajorScaleExercise() {
   };
 
   return (
-    <Container sx={{ mx: "auto", p: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Paper
+        elevation={3}
+        sx={{ p: 4, display: "flex", flexDirection: "column", alignItems: "center" }}
+      >
         <Typography variant="h5" gutterBottom>
-          Inserisci la scala maggiore di: <strong>{rootNote}</strong>
+          Scala maggiore di <strong>{rootNote}</strong>
         </Typography>
-        <Typography variant="body2" gutterBottom>
-          Seleziona le note della scala maggiore in ordine corretto.
+        <Typography variant="body2" sx={{ mb: 3 }}>
+          Seleziona le note della scala maggiore nell'ordine corretto.
         </Typography>
 
-        <Box mt={2}>
+        <Box mt={2} justifyContent="center">
           <PianoKeyboard
             noteRange={{ first: firstNote, last: lastNote }}
             onNoteClick={onNoteClick}
@@ -102,40 +110,56 @@ export default function MajorScaleExercise() {
           />
         </Box>
 
-        <Box mt={2}>
-          <Typography>Note selezionate:</Typography>
-          <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
+        <Box mt={4} textAlign="center" width="100%">
+          <Typography variant="subtitle1">Note selezionate</Typography>
+          <Stack
+            direction="row"
+            spacing={1}
+            justifyContent="center"
+            mt={1}
+            flexWrap="wrap"
+          >
             {userInput.length === 0 ? (
-              <Typography>-</Typography>
+              <Typography></Typography>
             ) : (
               userInput.map((n, i) => <Chip key={i} label={n} />)
             )}
           </Stack>
         </Box>
 
-        <Stack direction="row" spacing={2} mt={3} flexWrap="wrap" alignItems="center">
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={resetExercise}
-            disabled={!feedback || feedback.severity !== "success"}
-          >
-            Reset selezione
-          </Button>
-          <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
-            Torna indietro
-          </Button>
-          <Box sx={{ ml: "auto", display: "flex", gap: 2 }}>
-            <Chip label={`Corrette: ${correctCount}`} color="success" />
-            <Chip label={`Sbagliate: ${wrongCount}`} color="error" />
-          </Box>
-        </Stack>
-
         {feedback && (
-          <Alert severity={feedback.severity} sx={{ mt: 3 }}>
+          <Alert severity={feedback.severity} sx={{ mt: 4 }}>
             {feedback.text}
           </Alert>
         )}
+
+        <Stack
+          direction="row"
+          spacing={2}
+          mt={4}
+          alignItems="center"
+          justifyContent="space-between"
+          width="100%"
+          flexWrap="wrap"
+        >
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={clearInput}
+            disabled={userInput.length === 0 && !feedback}
+          >
+            Cancella selezione
+          </Button>
+
+          <Box display="flex" gap={2}>
+            <Chip label={`Corrette: ${correctCount}`} color="success" />
+            <Chip label={`Sbagliate: ${wrongCount}`} color="error" />
+          </Box>
+
+          <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
+            Torna indietro
+          </Button>
+        </Stack>
       </Paper>
     </Container>
   );
