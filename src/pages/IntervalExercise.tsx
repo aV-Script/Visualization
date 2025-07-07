@@ -8,8 +8,7 @@ import {
   Stack,
   Chip,
   Alert,
-  Container,
-  Grid,
+  Container
 } from "@mui/material";
 import { MidiNumbers } from "react-piano";
 import PianoKeyboard from "../components/PianoKeyboard";
@@ -84,8 +83,8 @@ export default function IntervalExercise() {
     if (difficulty) {
       generateExercise();
     }
-  }, [difficulty]);
-
+  }, [difficulty, generateExercise]);
+  
   const handleNoteClick = useCallback(
     (midiNumber: number) => {
       if (midiNumber === rootNote) return;
