@@ -8,7 +8,6 @@ import {
   Button,
   Stack,
   Chip,
-  Alert,
 } from "@mui/material";
 import { MidiNumbers } from "react-piano";
 import PianoKeyboard from "../components/PianoKeyboard";
@@ -22,7 +21,7 @@ export default function MajorScaleExercise() {
 
   const [rootNote, setRootNote] = useState<string | null>(null);
   const [userInput, setUserInput] = useState<string[]>([]);
-  const [feedback, setFeedback] = useState<{ severity: "success" | "error"; text: string } | null>(null);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
 
@@ -33,7 +32,7 @@ export default function MajorScaleExercise() {
     const newRoot = ALL_KEYS[Math.floor(Math.random() * ALL_KEYS.length)];
     setRootNote(newRoot);
     setUserInput([]);
-    setFeedback(null);
+    setIsCorrect(null);
   }, []);
 
   useEffect(() => {
@@ -46,11 +45,11 @@ export default function MajorScaleExercise() {
   const clearInput = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setUserInput([]);
-    setFeedback(null);
+    setIsCorrect(null);
   };
 
   const handleNoteClick = (midiNumber: number) => {
-    if (!rootNote) return;
+    if (!rootNote || isCorrect !== null) return;
 
     const note = MidiNumbers.getAttributes(midiNumber).note;
     const scale = generateMajorScale(rootNote);
@@ -61,13 +60,7 @@ export default function MajorScaleExercise() {
 
       if (newInput.length === scale.length) {
         const correct = scale.every((n, i) => n === newInput[i]);
-
-        setFeedback({
-          severity: correct ? "success" : "error",
-          text: correct
-            ? `Bravo! Scala di ${rootNote} corretta.`
-            : `Errore. La scala corretta è: ${scale.join(", ")}`,
-        });
+        setIsCorrect(correct);
 
         if (correct) {
           setCorrectCount((c) => c + 1);
@@ -117,16 +110,23 @@ export default function MajorScaleExercise() {
             {userInput.length === 0 ? (
               <Typography sx={{ opacity: 0.6 }}>Nessuna nota selezionata</Typography>
             ) : (
-              userInput.map((note, i) => <Chip key={i} label={note} />)
+              userInput.map((note, i) => (
+                <Chip
+                  key={i}
+                  label={note}
+                  color={
+                    isCorrect === null
+                      ? "default"
+                      : isCorrect
+                      ? "success"
+                      : "error"
+                  }
+                  sx={{ fontWeight: "bold" }}
+                />
+              ))
             )}
           </Stack>
         </Box>
-
-        {feedback && (
-          <Alert severity={feedback.severity} sx={{ mt: 4, width: "100%" }}>
-            {feedback.text}
-          </Alert>
-        )}
 
         <Stack
           direction="row"
@@ -137,22 +137,17 @@ export default function MajorScaleExercise() {
           flexWrap="wrap"
           alignItems="center"
         >
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={clearInput}
-            disabled={userInput.length === 0 && !feedback}
-          >
-            Cancella selezione
+          <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
+            Indietro
           </Button>
 
-          <Box display="flex" gap={2} flexWrap="wrap" justifyContent="center" flexGrow={1}>
-            <Chip label={`Corrette: ${correctCount}`} color="success" />
-            <Chip label={`Sbagliate: ${wrongCount}`} color="error" />
-          </Box>
-
-          <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
-            Torna indietro
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={clearInput}
+            disabled={userInput.length === 0 && isCorrect === null}
+          >
+            Cancella selezione
           </Button>
         </Stack>
       </Paper>

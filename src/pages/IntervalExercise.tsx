@@ -31,9 +31,9 @@ export default function IntervalExercise() {
   const [interval, setInterval] = useState<Interval | null>(null);
   const [selectedNote, setSelectedNote] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [correctCount, setCorrectCount] = useState(0);
-  const [wrongCount, setWrongCount] = useState(0);
   const [disabled, setDisabled] = useState(false);
+
+  const [correctStreak, setCorrectStreak] = useState(0);
 
   const rootNoteRef = useRef<number | null>(null);
   const correctStreakRef = useRef(0);
@@ -69,6 +69,7 @@ export default function IntervalExercise() {
     if (rootNoteRef.current === null || correctStreakRef.current >= 10) {
       rootNoteRef.current = generateRootNote(randomInterval.semitones);
       correctStreakRef.current = 0;
+      setCorrectStreak(0);
     }
 
     setInterval(randomInterval);
@@ -96,13 +97,13 @@ export default function IntervalExercise() {
 
       setFeedback({
         severity: correct ? "success" : "error",
-        text: correct ? "Corretto" : "Sbagliato",
+        text: correct ? "Corretto!" : "Sbagliato",
       });
 
       if (correct) {
         playCorrect();
-        setCorrectCount((c) => c + 1);
         correctStreakRef.current += 1;
+        setCorrectStreak(correctStreakRef.current);
 
         setTimeout(() => {
           setSelectedNote(null);
@@ -112,8 +113,8 @@ export default function IntervalExercise() {
         }, 2000);
       } else {
         playWrong();
-        setWrongCount((w) => w + 1);
         correctStreakRef.current = 0;
+        setCorrectStreak(0);
 
         setTimeout(() => {
           setSelectedNote(null);
@@ -130,17 +131,21 @@ export default function IntervalExercise() {
       <Container sx={{ p: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
           <Typography variant="h5" gutterBottom>
-            Scegli la difficoltà
+            Allenamento Intervalli – Memoria e Rapidità
           </Typography>
-          <Stack spacing={2} mt={2}>
+          <Typography variant="body2" color="text.secondary" mb={3}>
+            Seleziona un livello di difficoltà per allenare la tua capacità di
+            calcolare velocemente la distanza tra due note.
+          </Typography>
+          <Stack spacing={2}>
             <Button variant="contained" onClick={() => setDifficulty("basic")}>
-              Gradi normali
+              Intervalli di base (semplici)
             </Button>
             <Button variant="contained" onClick={() => setDifficulty("altered")}>
-              Gradi con alterazione
+              Intervalli con alterazioni (maggiore difficoltà)
             </Button>
             <Button variant="contained" onClick={() => setDifficulty("extended")}>
-              Gradi con alterazione + Estensioni
+              Tutti gli intervalli (inclusi quelli estesi)
             </Button>
           </Stack>
         </Paper>
@@ -148,13 +153,18 @@ export default function IntervalExercise() {
     );
   }
 
+  const streakArray = Array(10).fill(null);
+
   return (
     <Container sx={{ p: 4 }}>
-      <Paper elevation={3} sx={{ p: 4, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <Paper
+        elevation={3}
+        sx={{ p: 4, display: "flex", flexDirection: "column", alignItems: "center" }}
+      >
         <Box display="flex" gap={2} flexWrap="wrap" justifyContent="center" alignItems="center">
           {interval && rootNoteRef.current !== null && (
             <Chip
-              label={`${interval.name} di ${MidiNumbers.getAttributes(rootNoteRef.current).note}`}
+              label={`${interval.name} da ${MidiNumbers.getAttributes(rootNoteRef.current).note}`}
               sx={{
                 fontSize: "1.1rem",
                 fontWeight: "bold",
@@ -186,18 +196,26 @@ export default function IntervalExercise() {
           />
         </Box>
 
-        <Stack direction="row" spacing={2} mt={4} flexWrap="wrap" justifyContent="center">
-          <Chip label={`Corrette: ${correctCount}`} color="success" />
-          <Chip label={`Sbagliate: ${wrongCount}`} color="error" />
-          <Chip
-            label={`Serie Corretta: ${correctStreakRef.current}`}
-            color={correctStreakRef.current >= 10 ? "success" : "info"}
-          />
-        </Stack>
+        <Box mt={3} display="flex" gap={1}>
+          {streakArray.map((_, idx) => (
+            <Box
+              key={idx}
+              sx={{
+                width: 25,
+                height: 25,
+                borderRadius: "4px",
+                backgroundColor: idx < correctStreak ? "success.main" : "grey.300",
+                border: "1px solid",
+                borderColor: idx < correctStreak ? "success.dark" : "grey.500",
+                transition: "background-color 0.3s",
+              }}
+            />
+          ))}
+        </Box>
 
         <Box mt={4} alignSelf="flex-start">
           <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
-            Torna indietro
+            Indietro
           </Button>
         </Box>
       </Paper>

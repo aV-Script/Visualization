@@ -84,7 +84,7 @@ export default function Layout() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-             Esercizi di Visualizzazione Musicale
+             TonIQ 
           </Typography>
         </Toolbar>
       </AppBar>
