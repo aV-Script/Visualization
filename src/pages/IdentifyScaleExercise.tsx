@@ -22,8 +22,6 @@ export default function MajorScaleExercise() {
   const [rootNote, setRootNote] = useState<string | null>(null);
   const [userInput, setUserInput] = useState<string[]>([]);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [correctCount, setCorrectCount] = useState(0);
-  const [wrongCount, setWrongCount] = useState(0);
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -63,10 +61,7 @@ export default function MajorScaleExercise() {
         setIsCorrect(correct);
 
         if (correct) {
-          setCorrectCount((c) => c + 1);
           timeoutRef.current = setTimeout(resetExercise, 2000);
-        } else {
-          setWrongCount((w) => w + 1);
         }
       }
     }
