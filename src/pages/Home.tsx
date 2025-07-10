@@ -7,29 +7,29 @@ export default function Home() {
 
   return (
     <Container sx={{ mx: "auto", p: 4 }}>
-        <Paper elevation={3} sx={{ padding: 4, width: "100%" }}>
-          <Stack spacing={4} alignItems="center">
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-              onClick={() => navigate("/exercise")}
-            >
-              Riconoscimento Intervalli
-            </Button>
+      <Paper elevation={3} sx={{ padding: 4, width: "100%" }}>
+        <Stack spacing={4} alignItems="center">
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            onClick={() => navigate("/exercise")}
+          >
+            Riconoscimento Intervalli
+          </Button>
 
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-              onClick={() => navigate("/identify")}
-            >
-              Riconoscimento Scale
-            </Button>
-          </Stack>
-        </Paper>
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            onClick={() => navigate("/identify")}
+          >
+            Riconoscimento Scale
+          </Button>
+        </Stack>
+      </Paper>
     </Container>
   );
 }

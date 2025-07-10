@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -7,8 +7,7 @@ import {
   Typography,
   Stack,
   Chip,
-  Alert,
-  Container
+  Container,
 } from "@mui/material";
 import { MidiNumbers } from "react-piano";
 import PianoKeyboard from "../components/PianoKeyboard";
@@ -18,18 +17,10 @@ import {
   EXTENDED_INTERVALS,
 } from "../constants/music";
 import { Interval, Feedback } from "../types/music";
-
-const getRandomNoteInRange = (min: number, max: number): number =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
-
-const filterNonNull = <T,>(arr: (T | null)[]): T[] =>
-  arr.filter((x): x is T => x !== null);
-
-const getFeedbackText = (correct: boolean) =>
-  correct ? "Corretto" : "Sbagliato";
+import useSound from "use-sound";
 
 const firstNote = MidiNumbers.fromNote("c4");
-const lastNote = MidiNumbers.fromNote("c7");
+const lastNote = MidiNumbers.fromNote("c6");
 
 type Difficulty = "basic" | "altered" | "extended";
 
@@ -37,13 +28,15 @@ export default function IntervalExercise() {
   const navigate = useNavigate();
 
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
-  const [rootNote, setRootNote] = useState<number | null>(null);
   const [interval, setInterval] = useState<Interval | null>(null);
   const [selectedNote, setSelectedNote] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
-  const [correctStreak, setCorrectStreak] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
+  const [disabled, setDisabled] = useState(false);
+
+  const rootNoteRef = useRef<number | null>(null);
+  const correctStreakRef = useRef(0);
 
   const getIntervalsForDifficulty = useCallback((level: Difficulty): Interval[] => {
     switch (level) {
@@ -56,61 +49,80 @@ export default function IntervalExercise() {
     }
   }, []);
 
+  const getRandomNoteInRange = (min: number, max: number): number =>
+    Math.floor(Math.random() * (max - min + 1)) + min;
+
   const generateRootNote = useCallback((intervalSemitones: number): number => {
-    return getRandomNoteInRange(firstNote, lastNote - intervalSemitones);
+    const maxRoot = lastNote - intervalSemitones;
+    return getRandomNoteInRange(firstNote, maxRoot);
   }, []);
 
   const generateExercise = useCallback(() => {
     if (!difficulty) return;
 
-    const availableIntervals = getIntervalsForDifficulty(difficulty);
-    const randomInterval =
-      availableIntervals[Math.floor(Math.random() * availableIntervals.length)];
+    const intervals = getIntervalsForDifficulty(difficulty).filter(
+      (intv) => intv.semitones <= (lastNote - firstNote)
+    );
+
+    const randomInterval = intervals[Math.floor(Math.random() * intervals.length)];
+
+    if (rootNoteRef.current === null || correctStreakRef.current >= 10) {
+      rootNoteRef.current = generateRootNote(randomInterval.semitones);
+      correctStreakRef.current = 0;
+    }
 
     setInterval(randomInterval);
-
-    if (rootNote === null || correctStreak >= 10) {
-      const newRoot = generateRootNote(randomInterval.semitones);
-      setRootNote(newRoot);
-      setCorrectStreak(0);
-    }
-
     setSelectedNote(null);
     setFeedback(null);
-  }, [difficulty, correctStreak, getIntervalsForDifficulty, rootNote, generateRootNote]);
+  }, [difficulty, getIntervalsForDifficulty, generateRootNote]);
 
   useEffect(() => {
-    if (difficulty) {
-      generateExercise();
-    }
+    if (difficulty) generateExercise();
   }, [difficulty, generateExercise]);
-  
+
+  const [playCorrect] = useSound("/Visualization/sounds/correct.mp3");
+  const [playWrong] = useSound("/Visualization/sounds/wrong.mp3");
+
   const handleNoteClick = useCallback(
     (midiNumber: number) => {
-      if (midiNumber === rootNote) return;
+      if (disabled || midiNumber === rootNoteRef.current) return;
+      if (rootNoteRef.current === null || interval === null) return;
+
+      setDisabled(true);
       setSelectedNote(midiNumber);
 
-      if (rootNote === null || interval === null) return;
-
-      const expectedNote = rootNote + interval.semitones;
+      const expectedNote = rootNoteRef.current + interval.semitones;
       const correct = midiNumber === expectedNote;
 
       setFeedback({
         severity: correct ? "success" : "error",
-        text: getFeedbackText(correct),
+        text: correct ? "Corretto" : "Sbagliato",
       });
 
       if (correct) {
+        playCorrect();
         setCorrectCount((c) => c + 1);
-        setCorrectStreak((s) => s + 1);
+        correctStreakRef.current += 1;
+
         setTimeout(() => {
+          setSelectedNote(null);
+          setFeedback(null);
           generateExercise();
-        }, 1000);
+          setDisabled(false);
+        }, 2000);
       } else {
+        playWrong();
         setWrongCount((w) => w + 1);
+        correctStreakRef.current = 0;
+
+        setTimeout(() => {
+          setSelectedNote(null);
+          setFeedback(null);
+          setDisabled(false);
+        }, 2000);
       }
     },
-    [rootNote, interval, generateExercise]
+    [interval, disabled, generateExercise, playCorrect, playWrong]
   );
 
   if (!difficulty) {
@@ -120,7 +132,7 @@ export default function IntervalExercise() {
           <Typography variant="h5" gutterBottom>
             Scegli la difficoltà
           </Typography>
-          <Stack spacing={2} direction="column" mt={2}>
+          <Stack spacing={2} mt={2}>
             <Button variant="contained" onClick={() => setDifficulty("basic")}>
               Gradi normali
             </Button>
@@ -128,7 +140,7 @@ export default function IntervalExercise() {
               Gradi con alterazione
             </Button>
             <Button variant="contained" onClick={() => setDifficulty("extended")}>
-               Gradi con alterazione + Estensioni
+              Gradi con alterazione + Estensioni
             </Button>
           </Stack>
         </Paper>
@@ -139,12 +151,22 @@ export default function IntervalExercise() {
   return (
     <Container sx={{ p: 4 }}>
       <Paper elevation={3} sx={{ p: 4, display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <Box display="flex" alignItems="center" justifyContent="center" gap={2} flexWrap="wrap">
-          {interval && rootNote !== null && (
+        <Box display="flex" gap={2} flexWrap="wrap" justifyContent="center" alignItems="center">
+          {interval && rootNoteRef.current !== null && (
             <Chip
-              label={`${interval.name} di ${MidiNumbers.getAttributes(rootNote).note}`}
-              color="default"
-              sx={{ fontSize: "1.1rem", fontWeight: "bold", px: 2 }}
+              label={`${interval.name} di ${MidiNumbers.getAttributes(rootNoteRef.current).note}`}
+              sx={{
+                fontSize: "1.1rem",
+                fontWeight: "bold",
+                px: 2,
+                bgcolor:
+                  feedback?.severity === "success"
+                    ? "success.main"
+                    : feedback?.severity === "error"
+                    ? "error.main"
+                    : "default",
+                color: feedback ? "white" : "default",
+              }}
             />
           )}
           {selectedNote !== null && (
@@ -156,26 +178,24 @@ export default function IntervalExercise() {
           )}
         </Box>
 
-        <Box mt={2} justifyContent="center">
+        <Box mt={2}>
           <PianoKeyboard
             noteRange={{ first: firstNote, last: lastNote }}
             onNoteClick={handleNoteClick}
-            activeNotes={filterNonNull([rootNote, selectedNote])}
+            activeNotes={[rootNoteRef.current, selectedNote].filter((n): n is number => n !== null)}
           />
         </Box>
 
-        <Stack direction="row" spacing={2} mt={4} justifyContent="center">
+        <Stack direction="row" spacing={2} mt={4} flexWrap="wrap" justifyContent="center">
           <Chip label={`Corrette: ${correctCount}`} color="success" />
           <Chip label={`Sbagliate: ${wrongCount}`} color="error" />
+          <Chip
+            label={`Serie Corretta: ${correctStreakRef.current}`}
+            color={correctStreakRef.current >= 10 ? "success" : "info"}
+          />
         </Stack>
 
-        {feedback && (
-          <Alert severity={feedback.severity} sx={{ mt: 3, textAlign: "center" }}>
-            {feedback.text}
-          </Alert>
-        )}
-
-        <Box sx={{ mt: 4, alignSelf: "flex-start" }}>
+        <Box mt={4} alignSelf="flex-start">
           <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
             Torna indietro
           </Button>

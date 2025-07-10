@@ -1,59 +1,46 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Container,
+  Paper,
   Typography,
   Box,
   Button,
-  Paper,
   Stack,
   Chip,
   Alert,
-  Container,
 } from "@mui/material";
 import { MidiNumbers } from "react-piano";
 import PianoKeyboard from "../components/PianoKeyboard";
 import { generateMajorScale } from "../utils/music";
 import { ALL_KEYS } from "../constants/music";
 
-interface Feedback {
-  severity: "success" | "error";
-  text: string;
-}
-
 export default function MajorScaleExercise() {
   const navigate = useNavigate();
-
   const firstNote = MidiNumbers.fromNote("C4");
   const lastNote = MidiNumbers.fromNote("B5");
 
   const [rootNote, setRootNote] = useState<string | null>(null);
   const [userInput, setUserInput] = useState<string[]>([]);
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [feedback, setFeedback] = useState<{ severity: "success" | "error"; text: string } | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
 
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
-
-  const generateScale = useCallback((): string[] => {
-    return rootNote ? generateMajorScale(rootNote) : [];
-  }, [rootNote]);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetExercise = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    const randomKey = ALL_KEYS[Math.floor(Math.random() * ALL_KEYS.length)];
-    setRootNote(randomKey);
+    const newRoot = ALL_KEYS[Math.floor(Math.random() * ALL_KEYS.length)];
+    setRootNote(newRoot);
     setUserInput([]);
     setFeedback(null);
   }, []);
 
   useEffect(() => {
     resetExercise();
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, [resetExercise]);
 
   const clearInput = () => {
@@ -62,26 +49,29 @@ export default function MajorScaleExercise() {
     setFeedback(null);
   };
 
-  const onNoteClick = (midiNumber: number) => {
+  const handleNoteClick = (midiNumber: number) => {
+    if (!rootNote) return;
+
     const note = MidiNumbers.getAttributes(midiNumber).note;
-    const scale = generateScale();
+    const scale = generateMajorScale(rootNote);
 
     if (userInput.length < scale.length && !userInput.includes(note)) {
       const newInput = [...userInput, note];
       setUserInput(newInput);
 
       if (newInput.length === scale.length) {
-        const isCorrect = scale.every((n, i) => n === newInput[i]);
+        const correct = scale.every((n, i) => n === newInput[i]);
+
         setFeedback({
-          severity: isCorrect ? "success" : "error",
-          text: isCorrect
-            ? `Bravo! Scala maggiore di ${rootNote} corretta.`
-            : `Errore. Scala corretta: ${scale.join(", ")}`,
+          severity: correct ? "success" : "error",
+          text: correct
+            ? `Bravo! Scala di ${rootNote} corretta.`
+            : `Errore. La scala corretta è: ${scale.join(", ")}`,
         });
 
-        if (isCorrect) {
+        if (correct) {
           setCorrectCount((c) => c + 1);
-          timeoutRef.current = setTimeout(() => resetExercise(), 1500);
+          timeoutRef.current = setTimeout(resetExercise, 2000);
         } else {
           setWrongCount((w) => w + 1);
         }
@@ -93,24 +83,29 @@ export default function MajorScaleExercise() {
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Paper
         elevation={3}
-        sx={{ p: 4, display: "flex", flexDirection: "column", alignItems: "center" }}
+        sx={{
+          p: 4,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
       >
         <Typography variant="h5" gutterBottom>
           Scala maggiore di <strong>{rootNote}</strong>
         </Typography>
-        <Typography variant="body2" sx={{ mb: 3 }}>
+        <Typography variant="body2" sx={{ mb: 3, textAlign: "center" }}>
           Seleziona le note della scala maggiore nell'ordine corretto.
         </Typography>
 
-        <Box mt={2} justifyContent="center">
+        <Box mt={2} sx={{ display: "flex", justifyContent: "center" }}>
           <PianoKeyboard
             noteRange={{ first: firstNote, last: lastNote }}
-            onNoteClick={onNoteClick}
+            onNoteClick={handleNoteClick}
             activeNotes={userInput.map((note) => MidiNumbers.fromNote(note))}
           />
         </Box>
 
-        <Box mt={4} textAlign="center" width="100%">
+        <Box mt={4} width="100%" textAlign="center">
           <Typography variant="subtitle1">Note selezionate</Typography>
           <Stack
             direction="row"
@@ -120,15 +115,15 @@ export default function MajorScaleExercise() {
             flexWrap="wrap"
           >
             {userInput.length === 0 ? (
-              <Typography></Typography>
+              <Typography sx={{ opacity: 0.6 }}>Nessuna nota selezionata</Typography>
             ) : (
-              userInput.map((n, i) => <Chip key={i} label={n} />)
+              userInput.map((note, i) => <Chip key={i} label={note} />)
             )}
           </Stack>
         </Box>
 
         {feedback && (
-          <Alert severity={feedback.severity} sx={{ mt: 4 }}>
+          <Alert severity={feedback.severity} sx={{ mt: 4, width: "100%" }}>
             {feedback.text}
           </Alert>
         )}
@@ -137,10 +132,10 @@ export default function MajorScaleExercise() {
           direction="row"
           spacing={2}
           mt={4}
-          alignItems="center"
-          justifyContent="space-between"
           width="100%"
+          justifyContent="space-between"
           flexWrap="wrap"
+          alignItems="center"
         >
           <Button
             variant="outlined"
@@ -151,7 +146,7 @@ export default function MajorScaleExercise() {
             Cancella selezione
           </Button>
 
-          <Box display="flex" gap={2}>
+          <Box display="flex" gap={2} flexWrap="wrap" justifyContent="center" flexGrow={1}>
             <Chip label={`Corrette: ${correctCount}`} color="success" />
             <Chip label={`Sbagliate: ${wrongCount}`} color="error" />
           </Box>
