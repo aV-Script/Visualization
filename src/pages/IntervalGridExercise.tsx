@@ -48,7 +48,6 @@ export default function IntervalExercise() {
   const [selectedNote, setSelectedNote] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [disabled, setDisabled] = useState(false);
-  const [correctStreak, setCorrectStreak] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState<Set<string>>(new Set());
 
   const notesForTable = Array.from({ length: 12 }, (_, i) => firstNote + i);
@@ -76,7 +75,6 @@ export default function IntervalExercise() {
     setRootNote(null);
     setSelectedNote(null);
     setFeedback(null);
-    setCorrectStreak(0);
     setDisabled(false);
     setCorrectAnswers(new Set());
   }, [difficulty, getIntervalsForDifficulty]);
@@ -109,11 +107,9 @@ export default function IntervalExercise() {
 
       if (correct) {
         playCorrect();
-        setCorrectStreak((s) => s + 1);
         setCorrectAnswers((prev) => new Set(prev).add(`${rootNote}_${interval.name}`));
       } else {
         playWrong();
-        setCorrectStreak(0);
       }
 
       setTimeout(() => {
