@@ -48,6 +48,23 @@ export default function Home() {
               Ricorda le combinazioni di toni e semitoni per identificare rapidamente le scale.
             </Typography>
           </Box>
+          <Box>
+            <Button
+                variant="contained"
+                color="primary"
+                size="large"
+                fullWidth
+                startIcon={<MusicNoteIcon />}
+                onClick={() => navigate("/matrix")}
+                sx={{ py: 2, textTransform: "none", fontWeight: "bold" }}
+              >
+              Tavola degli Intervalli
+            </Button>
+
+            <Typography variant="body2" textAlign="center" color="text.secondary" sx={{ mt: 1 }}>
+              Ricorda le combinazioni di toni e semitoni per identificare rapidamente le scale.
+            </Typography>
+          </Box>
         </Stack>
       </Paper>
     </Container>

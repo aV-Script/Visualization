@@ -19,11 +19,12 @@ export default function PianoKeyboard({
   return (
     <Piano
       noteRange={noteRange}
-      playNote={onNoteClick}
-      stopNote={() => {}}
+      playNote={() => {}}
+      stopNote={onNoteClick}  
       activeNotes={activeNotes}
       width={600}
       disabled={false}
     />
   );
 }
+

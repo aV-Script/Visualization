@@ -4,7 +4,7 @@ import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import IntervalExercise from "./pages/IntervalExercise";
 import IdentifyScaleExercise from "./pages/IdentifyScaleExercise";
-
+import IntervalGridExercise from "./pages/IntervalGridExercise";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 
@@ -22,6 +22,7 @@ export default function App() {
             <Route index element={<Home />} />
             <Route path="exercise" element={<IntervalExercise />} />
             <Route path="identify" element={<IdentifyScaleExercise />} />
+            <Route path="matrix" element={<IntervalGridExercise />} />
           </Route>
         </Routes>
       </BrowserRouter>
